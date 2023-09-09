@@ -25,10 +25,6 @@ pub struct Item {
 }
 
 impl ItemTrait for Item {
-    const TITLE: &'static str = "Groups";
-    const INNER_MARGIN: f32 = 3.0;
-    const OUTER_MARGIN: f32 = 0.0;
-    const ROUNDING: f32 = 0.0;
     type Data<'a> = ();
 
     fn id(&self, _data: Self::Data<'_>) -> egui::Id {
@@ -87,7 +83,9 @@ impl eframe::App for Dashboard {
                             )));
                         }
 
-                        ListView::new(self.items.iter(), (), Some("something"))
+                        ListView::new(self.items.iter(), ())
+                            .title("Search".into())
+                            .hold_text("something".into())
                             // .max_height(ui.available_height() - 150.0)
                             .show(ctx, ui);
                         if CURRENT_GROUP_ITEM.read().unwrap().is_some() {

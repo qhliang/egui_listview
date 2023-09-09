@@ -2,12 +2,6 @@ use egui::{Color32, Context, Frame, Id, Ui};
 use std::borrow::Cow;
 
 pub trait ItemTrait {
-    const TITLE: &'static str;
-    const INNER_MARGIN: f32 = 2.0;
-    const OUTER_MARGIN: f32 = 2.0;
-    const ROUNDING: f32 = 5.0;
-    const STRIPED: bool = true;
-
     type Data<'a>: Copy;
 
     /// 在该列表中的唯一标识

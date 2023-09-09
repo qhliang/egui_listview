@@ -4,22 +4,62 @@ use std::borrow::Cow;
 use crate::r#trait::ItemTrait;
 
 pub struct ListView<'a, W: ItemTrait + 'a, L: Iterator<Item = &'a W>> {
-    pub hold_text: Option<Cow<'a, str>>,
-    pub items: L,
-    pub data: W::Data<'a>,
+    pub(crate) title: Cow<'a, str>,
+    pub(crate) hold_text: Option<Cow<'a, str>>,
+    pub(crate) items: L,
+    pub(crate) data: W::Data<'a>,
+    pub(crate) inner_margin: f32,
+    pub(crate) outer_margin: f32,
+    pub(crate) rounding: f32,
+    pub(crate) striped: bool,
 }
 
 impl<'a, W: ItemTrait + 'a, L: Iterator<Item = &'a W>> ListView<'a, W, L> {
-    pub fn new(items: L, data: W::Data<'a>, hold_text: Option<impl Into<Cow<'a, str>>>) -> Self {
+    pub fn new(items: L, data: W::Data<'a>) -> Self {
         Self {
-            hold_text: hold_text.map(|x| x.into()),
+            title: Cow::Borrowed("Search"),
+            hold_text: None,
             items,
             data,
+            inner_margin: 3.0,
+            outer_margin: 0.0,
+            rounding: 0.0,
+            striped: false,
         }
     }
 }
 
 impl<'a, W: ItemTrait + 'a, L: Iterator<Item = &'a W>> ListView<'a, W, L> {
+    pub fn title(mut self, title: Cow<'a, str>) -> Self {
+        self.title = title;
+        self
+    }
+
+    pub fn hold_text(mut self, text: Cow<'a, str>) -> Self {
+        self.hold_text = Some(text);
+        self
+    }
+
+    pub fn inner_margin(mut self, margin: f32) -> Self {
+        self.inner_margin = margin;
+        self
+    }
+
+    pub fn outer_margin(mut self, margin: f32) -> Self {
+        self.outer_margin = margin;
+        self
+    }
+
+    pub fn rounding(mut self, rounding: f32) -> Self {
+        self.rounding = rounding;
+        self
+    }
+
+    pub fn striped(mut self) -> Self {
+        self.striped = true;
+        self
+    }
+
     pub fn show(
         self,
         ctx: &egui::Context,
@@ -29,9 +69,14 @@ impl<'a, W: ItemTrait + 'a, L: Iterator<Item = &'a W>> ListView<'a, W, L> {
 
         let mut resp = ui.vertical(|ui| {
             let ListView {
+                title,
                 hold_text,
                 items,
                 data,
+                inner_margin,
+                outer_margin,
+                rounding,
+                striped,
             } = self;
 
             let resp = ui.group(|ui| {
@@ -48,7 +93,7 @@ impl<'a, W: ItemTrait + 'a, L: Iterator<Item = &'a W>> ListView<'a, W, L> {
                     ui.data_mut(|d| d.get_temp(hovered_id)).unwrap_or_default();
 
                 ui.horizontal_top(|ui| {
-                    ui.add(Label::new(RichText::new(W::TITLE).strong()));
+                    ui.add(Label::new(RichText::new(title).strong()));
                     let mut search_text = TextEdit::singleline(&mut search);
                     if let Some(text) = hold_text {
                         search_text = search_text.hint_text(text);
@@ -65,7 +110,7 @@ impl<'a, W: ItemTrait + 'a, L: Iterator<Item = &'a W>> ListView<'a, W, L> {
                     .show(ui, |ui| {
                         egui::Grid::new("list view container")
                             .num_columns(1)
-                            .striped(W::STRIPED)
+                            .striped(striped)
                             .show(ui, |ui| {
                                 for item in items {
                                     let id = item.id(data);
@@ -78,9 +123,9 @@ impl<'a, W: ItemTrait + 'a, L: Iterator<Item = &'a W>> ListView<'a, W, L> {
 
                                     if search.is_empty() || item.on_search(&search, data) {
                                         let mut child_frame = egui::Frame::default()
-                                            .inner_margin(W::INNER_MARGIN)
-                                            .outer_margin(W::OUTER_MARGIN)
-                                            .rounding(W::ROUNDING);
+                                            .inner_margin(inner_margin)
+                                            .outer_margin(outer_margin)
+                                            .rounding(rounding);
                                         if checked {
                                             item.style_clicked(&mut child_frame);
                                         } else if hover {

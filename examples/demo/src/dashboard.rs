@@ -86,6 +86,7 @@ impl eframe::App for Dashboard {
                         ListView::new(self.items.iter(), ())
                             .title("Search".into())
                             .hold_text("something".into())
+                            .striped()
                             // .max_height(ui.available_height() - 150.0)
                             .show(ctx, ui);
                         if CURRENT_GROUP_ITEM.read().unwrap().is_some() {

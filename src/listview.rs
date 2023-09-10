@@ -1,4 +1,4 @@
-use egui::{Id, Label, RichText, ScrollArea, Sense, TextEdit};
+use egui::{Frame, Id, Label, Margin, RichText, Rounding, ScrollArea, Sense, Style, TextEdit};
 use std::borrow::Cow;
 
 use crate::r#trait::ItemTrait;
@@ -8,9 +8,9 @@ pub struct ListView<'a, W: ItemTrait + 'a, L: Iterator<Item = &'a W>> {
     pub(crate) hold_text: Option<Cow<'a, str>>,
     pub(crate) items: L,
     pub(crate) data: W::Data<'a>,
-    pub(crate) inner_margin: f32,
-    pub(crate) outer_margin: f32,
-    pub(crate) rounding: f32,
+    pub(crate) inner_margin: Margin,
+    pub(crate) outer_margin: Margin,
+    pub(crate) rounding: Rounding,
     pub(crate) striped: bool,
 }
 
@@ -21,9 +21,9 @@ impl<'a, W: ItemTrait + 'a, L: Iterator<Item = &'a W>> ListView<'a, W, L> {
             hold_text: None,
             items,
             data,
-            inner_margin: 3.0,
-            outer_margin: 0.0,
-            rounding: 0.0,
+            inner_margin: Margin::same(3.0),
+            outer_margin: Margin::default(),
+            rounding: Rounding::default(),
             striped: false,
         }
     }
@@ -40,17 +40,17 @@ impl<'a, W: ItemTrait + 'a, L: Iterator<Item = &'a W>> ListView<'a, W, L> {
         self
     }
 
-    pub fn inner_margin(mut self, margin: f32) -> Self {
+    pub fn inner_margin(mut self, margin: Margin) -> Self {
         self.inner_margin = margin;
         self
     }
 
-    pub fn outer_margin(mut self, margin: f32) -> Self {
+    pub fn outer_margin(mut self, margin: Margin) -> Self {
         self.outer_margin = margin;
         self
     }
 
-    pub fn rounding(mut self, rounding: f32) -> Self {
+    pub fn rounding(mut self, rounding: Rounding) -> Self {
         self.rounding = rounding;
         self
     }
@@ -67,7 +67,7 @@ impl<'a, W: ItemTrait + 'a, L: Iterator<Item = &'a W>> ListView<'a, W, L> {
     ) -> egui::InnerResponse<Option<&'a W>> {
         let mut selected_item = None;
 
-        let mut resp = ui.vertical(|ui| {
+        let mut resp = ui.vertical(|outer_ui| {
             let ListView {
                 title,
                 hold_text,
@@ -79,7 +79,7 @@ impl<'a, W: ItemTrait + 'a, L: Iterator<Item = &'a W>> ListView<'a, W, L> {
                 striped,
             } = self;
 
-            let resp = ui.group(|ui| {
+            let resp = outer_ui.scope(|ui| {
                 let root_id = ui.auto_id_with("ListView");
                 let search_id = root_id.with("search");
                 let selected_id = root_id.with("selected");

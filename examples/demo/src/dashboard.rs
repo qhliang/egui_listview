@@ -1,7 +1,7 @@
 use crate::detail::ViewGroupDetail;
 use crate::group_new::ViewGroupNew;
 use crate::state::State;
-use eframe::egui::{CentralPanel, Color32, Context, FontId, RichText, SidePanel};
+use eframe::egui::{CentralPanel, Color32, Context, FontId, Margin, RichText, SidePanel};
 use eframe::emath::Align;
 use eframe::{egui, Frame};
 use egui::{Layout, Ui};
@@ -74,29 +74,42 @@ impl eframe::App for Dashboard {
             .resizable(false)
             .default_width(250.0)
             .show(ctx, |ui| {
-                ui.scope(|ui| {
-                    ui.with_layout(Layout::bottom_up(Align::Center), |ui| {
-                        if ui.button("Add Group").clicked() {
-                            self.state = Some(State::GroupNew(ViewGroupNew::new(
-                                String::new(),
-                                String::new(),
-                            )));
-                        }
+                egui::Frame::default().outer_margin(6.0).show(ui, |ui| {
+                    ui.with_layout(
+                        Layout::bottom_up(Align::Center).with_cross_justify(true),
+                        |ui| {
+                            egui::Frame::default()
+                                .outer_margin({
+                                    let mut margin = Margin::default();
+                                    margin.top = 6.0;
+                                    margin
+                                })
+                                .show(ui, |ui| {
+                                    if ui.button("Add Group").clicked() {
+                                        self.state = Some(State::GroupNew(ViewGroupNew::new(
+                                            String::new(),
+                                            String::new(),
+                                        )));
+                                    }
+                                });
 
-                        ListView::new(self.items.iter(), ())
-                            .title("Search".into())
-                            .hold_text("something".into())
-                            .striped()
-                            // .max_height(ui.available_height() - 150.0)
-                            .show(ctx, ui);
-                        if CURRENT_GROUP_ITEM.read().unwrap().is_some() {
-                            let mut writer = CURRENT_GROUP_ITEM.write().unwrap();
-                            if let Some(item) = std::mem::take(&mut *writer) {
-                                self.state =
-                                    Some(State::GroupDetail(ViewGroupDetail::new_by_item(item)));
+                            let mut margin = Margin::default();
+                            margin.bottom = 60.0;
+                            ListView::new(self.items.iter(), ())
+                                .title("Search".into())
+                                .hold_text("something".into())
+                                .striped()
+                                .show(ctx, ui);
+                            if CURRENT_GROUP_ITEM.read().unwrap().is_some() {
+                                let mut writer = CURRENT_GROUP_ITEM.write().unwrap();
+                                if let Some(item) = std::mem::take(&mut *writer) {
+                                    self.state = Some(State::GroupDetail(
+                                        ViewGroupDetail::new_by_item(item),
+                                    ));
+                                }
                             }
-                        }
-                    });
+                        },
+                    );
                 });
             });
         if let Some(state) = self.state.as_mut() {

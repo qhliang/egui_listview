@@ -1,4 +1,6 @@
-use egui::{Frame, Id, Label, Margin, RichText, Rounding, ScrollArea, Sense, Style, TextEdit};
+use egui::{
+    Align, Frame, Id, Label, Layout, Margin, RichText, Rounding, ScrollArea, Sense, Style, TextEdit,
+};
 use std::borrow::Cow;
 
 use crate::r#trait::ItemTrait;
@@ -93,12 +95,24 @@ impl<'a, W: ItemTrait + 'a, L: Iterator<Item = &'a W>> ListView<'a, W, L> {
                     ui.data_mut(|d| d.get_temp(hovered_id)).unwrap_or_default();
 
                 ui.horizontal_top(|ui| {
-                    ui.add(Label::new(RichText::new(title).strong()));
-                    let mut search_text = TextEdit::singleline(&mut search);
-                    if let Some(text) = hold_text {
-                        search_text = search_text.hint_text(text);
-                    }
-                    ui.add(search_text)
+                    ui.with_layout(Layout::left_to_right(Align::Min), |ui| {
+                        ui.visuals_mut().button_frame = true;
+                        ui.add(Label::new(RichText::new(title).strong()));
+                    });
+                    ui.with_layout(Layout::right_to_left(Align::Min), |ui| {
+                        if !search.is_empty() {
+                            ui.visuals_mut().button_frame = false;
+                            if ui.button("✖").on_hover_text("Clear search text").clicked() {
+                                search.clear();
+                            }
+                        }
+
+                        let mut search_text = TextEdit::singleline(&mut search);
+                        if let Some(text) = hold_text {
+                            search_text = search_text.hint_text(text);
+                        }
+                        ui.add(search_text);
+                    });
                 });
 
                 ui.separator();

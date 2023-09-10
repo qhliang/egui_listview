@@ -1,6 +1,6 @@
 [package]
 name = "egui_listview"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
 
 authors = ["john <hongliang-qin@foxmail.com>"]

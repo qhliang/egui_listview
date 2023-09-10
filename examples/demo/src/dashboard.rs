@@ -1,7 +1,9 @@
 use crate::detail::ViewGroupDetail;
 use crate::group_new::ViewGroupNew;
 use crate::state::State;
-use eframe::egui::{CentralPanel, Color32, Context, FontId, Margin, RichText, SidePanel};
+use eframe::egui::{
+    CentralPanel, Color32, Context, FontId, Margin, RichText, SidePanel, TopBottomPanel,
+};
 use eframe::emath::Align;
 use eframe::{egui, Frame};
 use egui::{Layout, Ui};
@@ -70,6 +72,13 @@ impl ItemTrait for Item {
 
 impl eframe::App for Dashboard {
     fn update(&mut self, ctx: &Context, frame: &mut Frame) {
+        TopBottomPanel::top("top_menu").show(ctx, |ui| {
+            ui.horizontal(|ui| {
+                ui.visuals_mut().button_frame = false;
+                egui::widgets::global_dark_light_mode_switch(ui);
+                ui.separator();
+            });
+        });
         SidePanel::left("order_group_list")
             .resizable(false)
             .default_width(250.0)
